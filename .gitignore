@@ -287,5 +287,6 @@ __pycache__/
 *.odx.cs
 *.xsd.cs
 
-# Ignore the .a binary files that are output
+# Ignore the .a binary files that are output and .out files in case I forget
 *.a
+*.out
