@@ -290,3 +290,10 @@ __pycache__/
 # Ignore the .a binary files that are output and .out files in case I forget
 *.a
 *.out
+
+# VScode stuff
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
