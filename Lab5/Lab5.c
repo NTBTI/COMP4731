@@ -5,15 +5,15 @@
 #include <pthread.h>
 #include <unistd.h>
 
-#define NITEMS 20
+#define NUM_ITEMS 20
 
-#define NPRODUCERS 2
-#define NCONSUMERS 2
+#define NUM_PRODUCERS 2
+#define NUM_CONSUMERS 2
 struct
 {
-    int next_write;
-    int next_read;
-    int data[NITEMS];
+    int nextWrite;
+    int nextRead;
+    int data[NUM_ITEMS];
 } buf = {0, 0, 0, {0}};
 
 sem_t available, used, lock;
@@ -32,17 +32,17 @@ void *doProducerStuff(void *tid)
         sem_wait(&available);
         sem_wait(&lock);
 
-        i = buf.next_write;
+        i = buf.nextWrite;
 
         buf.data[i] = value++;
 
         printf("P%d: %d --> [%d]\n", id, buf.data[i], i);
-        buf.next_write = (buf.next_write + 1) % NITEMS;
+        buf.nextWrite = (buf.nextWrite + 1) % NUM_ITEMS;
 
         sem_post(&lock);
         sem_post(&used);
 
-        sleep(1);
+        sleep(1); //slooooooooooow it down there son
     }
     pthread_exit(0);
 }
@@ -59,10 +59,10 @@ void *doConsumerStuff(void *tid)
     {
         sem_wait(&used);
         sem_wait(&lock);
-        i = buf.next_read;
+        i = buf.nextRead;
 
         printf("C%d: %d <-- [%d]\n", id, buf.data[i], i);
-        buf.next_read = (buf.next_read + 1) % NITEMS;
+        buf.nextRead = (buf.nextRead + 1) % NUM_ITEMS;
         sem_post(&lock);
         sem_post(&available);
 
@@ -74,15 +74,15 @@ void *doConsumerStuff(void *tid)
 
 int main(void)
 {
-    pthread_t producerThreads[NPRODUCERS];
-    pthread_t consumerThreads[NCONSUMERS];
+    pthread_t producerThreads[NUM_PRODUCERS];
+    pthread_t consumerThreads[NUM_CONSUMERS];
     int prodStatus, consStatus;
 
-    sem_init(&available, 0, NITEMS);
+    sem_init(&available, 0, NUM_ITEMS);
     sem_init(&used, 0, 0);
     sem_init(&lock, 0, 1);
 
-    for (int i = 0; i < NPRODUCERS; i++)
+    for (int i = 0; i < NUM_PRODUCERS; i++)
     {
         printf("Creating producer thread %d\n", i);
         prodStatus = pthread_create(&producerThreads[i], NULL, doProducerStuff, (void *)(intptr_t)i);
@@ -93,7 +93,7 @@ int main(void)
         }
     }
 
-    for (int i = 0; i < NCONSUMERS; i++)
+    for (int i = 0; i < NUM_CONSUMERS; i++)
     {
         printf("Creating consumer thread %d\n", i);
         consStatus = pthread_create(&consumerThreads[i], NULL, doConsumerStuff, (void *)(intptr_t)i);
