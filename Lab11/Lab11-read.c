@@ -18,18 +18,19 @@ int main(void)
     int numInts = 0;
 
     //open the shared mem location
-    shmFP = shm_open(SHAREDMEMLOC, O_RDWR, 0666);
+
+    shmFP = shm_open(SHAREDMEMLOC, O_RDONLY, 0);
 
     if (shmFP < 0)
     {
-        perror("Error opening shared memory\n");
+        perror("shm_open");
         return (EXIT_FAILURE);
     }
 
-    shmData = mmap(0, size, PROT_READ | PROT_WRITE, MAP_SHARED, shmFP, 0);
+    shmData = mmap(0, size, PROT_READ, MAP_SHARED, shmFP, 0);
     if (shmData == MAP_FAILED)
     {
-        perror("Error mapping\n");
+        perror("mmap");
         return (EXIT_FAILURE);
     }
 
@@ -37,7 +38,6 @@ int main(void)
     numInts = shmData[0];
     if (numInts < 0)
     {
-        perror("Nothing stored in shared mem\n");
         return (EXIT_FAILURE);
     }
 
@@ -49,5 +49,16 @@ int main(void)
     for (int i = 1; i < numInts + 1; i++)
     {
         printf("Shared int %d is --> %d\n", i, shmData[i]);
+    }
+
+    if (munmap(shmData, size) < 0)
+    {
+        perror("munmap");
+        return (EXIT_FAILURE);
+    }
+    if (shm_unlink(SHAREDMEMLOC) != 0)
+    {
+        perror("shm_unlink");
+        return (EXIT_FAILURE);
     }
 }
